@@ -153,7 +153,7 @@ define(
                         console.log(err);
                         alert(err);
                     })
-                    .complete(function () {
+                    .always(function () {
                         $("body").trigger('processStop');
                     });
             },
