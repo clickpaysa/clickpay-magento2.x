@@ -103,6 +103,7 @@ class Create extends Action
         if ($paypage->success) {
             // Create paypage success
             ClickPayHelper::log("ClickPay: create paypage success!, Order [{$order->getIncrementId()}]", 1);
+            ClickPayHelper::log("ClickPay: create paypage success!, Order [{$order->getIncrementId()}] ResponseBody -  ". json_encode($paypage), 1);
 
               // Remove sensetive information
               $res = new stdClass();
@@ -112,7 +113,7 @@ class Create extends Action
   
               $paypage = $res;
         } else {
-            ClickPayHelper::log("ClickPay: create paypage failed!, Order [{$order->getIncrementId()}] - " . json_encode($paypage), 3);
+            ClickPayHelper::log("ClickPay: create paypage failed!, Order [{$order->getIncrementId()}] ResponseBody " . json_encode($paypage), 3);
 
             try {
                 // Create paypage failed, Save the Quote (user's Cart)
