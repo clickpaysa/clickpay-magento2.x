@@ -17,7 +17,6 @@ use ClickPay\PayPage\Gateway\Http\ClickPayHelper;
 use ClickPay\PayPage\Gateway\Http\ClickPayHelpers;
 use ClickPay\PayPage\Model\Adminhtml\Source\CurrencySelect;
 use ClickPay\PayPage\Model\Adminhtml\Source\EmailConfig;
-
 use Magento\Vault\Api\Data\PaymentTokenFactoryInterface;
 
 
@@ -51,6 +50,7 @@ class Callback extends Action
 
     private $_paymentTokenFactory;
 
+    protected $order;
 
     /**
      * @var EncryptorInterface
@@ -72,6 +72,7 @@ class Callback extends Action
     public function __construct(
         Context $context,
         PageFactory $pageFactory,
+        Order $order,
         \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
         \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
         \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
@@ -88,7 +89,7 @@ class Callback extends Action
         $this->quoteRepository = $quoteRepository;
         $this->_paymentTokenFactory = $paymentTokenFactory;
         $this->encryptor = $encryptor;
-
+        $this->order = $order;
         // $this->_logger = $logger;
         // $this->resultRedirect = $context->getResultFactory();
         $this->ClickPay = new \ClickPay\PayPage\Gateway\Http\Client\Api;
@@ -105,8 +106,6 @@ class Callback extends Action
             return;
         }
 
-        // Get the params that were passed from our Router
-
         $data = ClickPayHelper::read_ipn_response();
         if (!$data) {
             return;
@@ -117,21 +116,14 @@ class Callback extends Action
         $transactionId = @$data->$_p_tran_ref;
         $pOrderId = @$data->$_p_cart_id;
 
-        //
-
         if (!$pOrderId || !$transactionId) {
             ClickPayHelper::log("ClickPay: OrderId/TransactionId data did not receive in callback", 3);
             return;
         }
 
-        //
-
         ClickPayHelper::log("Callback triggered, Order [{$pOrderId}], Transaction [{$transactionId}]", 1);
 
-        //
-
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $order = $objectManager->create('Magento\Sales\Model\Order')->loadByIncrementId($pOrderId);
+        $order = $this->order->loadByIncrementId($pOrderId);
 
         if (!$this->isValidOrder($order)) {
             ClickPayHelper::log("ClickPay: Order is missing, Order [{$pOrderId}]", 3);

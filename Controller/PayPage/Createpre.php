@@ -172,7 +172,7 @@ class Createpre extends Action
 
         // $isTokenise = $payment->getAdditionalInformation(VaultConfigProvider::IS_ACTIVE_CODE);
         // $a = $payment->getAdditionalInformation('pt_registered_transaction');
-        $values = $this->cickpay->prepare_order($quote, $paymentMethod, $isTokenise, true, $isLoggedIn);
+        $values = $this->clickpay->prepare_order($quote, $paymentMethod, $isTokenise, true, $isLoggedIn);
 
         $res = $ptApi->create_pay_page($values);
 

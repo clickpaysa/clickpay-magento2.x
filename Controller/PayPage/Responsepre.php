@@ -6,8 +6,7 @@ namespace ClickPay\PayPage\Controller\PayPage;
 
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-
-use ClickPay\PayPage\Gateway\Http\ClickpayCore;
+use ClickPay\PayPage\Gateway\Http\ClickPayCore;
 use ClickPay\PayPage\Gateway\Http\ClickpayHelper;
 
 
@@ -36,8 +35,9 @@ class Responsepre extends Action
         $this->quoteRepository = $quoteRepository;
         $this->rawResultFactory = $rawResultFactory;
 
-        $this->Clickpay = new \ClickPay\PayPage\Gateway\Http\Client\Api;
-        new ClickpayCore();
+        
+        $this->clickpay = new \ClickPay\PayPage\Gateway\Http\Client\Api;
+        new ClickPayCore();
     }
 
     /**

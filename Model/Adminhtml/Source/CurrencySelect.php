@@ -6,6 +6,8 @@
  */
 
 namespace ClickPay\PayPage\Model\Adminhtml\Source;
+use Magento\Directory\Model\CurrencyFactory;
+use Magento\Sales\Api\Data\OrderPaymentInterface;
 
 
 /**
@@ -17,6 +19,14 @@ class CurrencySelect implements \Magento\Framework\Option\ArrayInterface
 
     const CURRENCY_BASE  = 'base_currency';
     const CURRENCY_ORDER = 'order_currency';
+
+    protected $currencyFactory;
+
+    public function __construct(
+        CurrencyFactory $currencyFactory
+    ) {
+        $this->currencyFactory = $currencyFactory;
+    }
 
 
     /**
@@ -67,13 +77,10 @@ class CurrencySelect implements \Magento\Framework\Option\ArrayInterface
 
     static function convertOrderToBase($payment, $tranAmount)
     {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $currencyFactory = $objectManager->get('\Magento\Directory\Model\CurrencyFactory');
-
         $order = $payment->getOrder();
         $baseAmount = $order->getBaseGrandTotal();
 
-        $rate = $currencyFactory->create()
+        $rate = $this->currencyFactory->create()
             ->load($order->getOrderCurrencyCode())
             ->getAnyRate($order->getBaseCurrencyCode());
 

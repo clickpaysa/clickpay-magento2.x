@@ -5,7 +5,7 @@ namespace ClickPay\PayPage\Gateway\Http;
 use ClickPay\PayPage\Model\Adminhtml\Source\CurrencySelect;
 
 
-trait ClickpayHelpers
+trait ClickpayTabsHelpers
 {
 
     function isValidOrder($order)

@@ -47,7 +47,8 @@
 
                 <is_gateway>1</is_gateway>
                 <is_offline>0</is_offline>
-
+                <automatic_invoice>1</automatic_invoice>
+                <email_customer>1</email_customer>
                 <sort_order>10</sort_order>
                 <payment_preorder>0</payment_preorder>
             </all>

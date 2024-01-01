@@ -15,6 +15,8 @@ use ClickPay\PayPage\Gateway\Http\ClickPayEnum;
 use ClickPay\PayPage\Gateway\Http\ClickPayHelper;
 use ClickPay\PayPage\Model\Adminhtml\Source\CurrencySelect;
 use ClickPay\PayPage\Gateway\Http\ClickPayHelpers;
+use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Sales\Model\Order;
 
 
 /**
@@ -26,6 +28,8 @@ class Ipn extends Action
 
     // protected $resultRedirect;
     private $ClickPay;
+    protected $cartRepository;
+    protected $orderModel;
 
     /**
      * @var Magento\Sales\Model\Order\Email\Sender\InvoiceSender
@@ -43,7 +47,9 @@ class Ipn extends Action
      */
     public function __construct(
         Context $context,
-        \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender
+        \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
+        CartRepositoryInterface $cartRepository,
+        Order $orderModel
         // \Magento\Sales\Model\Order\CreditmemoFactory $_creditmemoFactory,
         // \Magento\Sales\Model\Service\CreditmemoService $_creditmemoService
         // \Psr\Log\LoggerInterface $logger
@@ -51,6 +57,8 @@ class Ipn extends Action
         parent::__construct($context);
 
         $this->_invoiceSender = $invoiceSender;
+        $this->cartRepository = $cartRepository;
+        $this->orderModel = $orderModel;
         // $this->_creditmemoFactory = $_creditmemoFactory;
         // $this->_creditmemoService = $_creditmemoService;
 
@@ -78,6 +86,14 @@ class Ipn extends Action
         $_p_tran_ref = 'tran_ref';
         $_p_cart_id = 'cart_id';
 
+        $logger = new \Laminas\Log\Logger();
+            $logger->addWriter(new \Laminas\Log\Writer\Stream(BP . '/var/log/ipn_callback.log'));
+            $logger->info('Callback Data: ' . json_encode($data));
+
+            die("ipn");
+            exit();
+
+
         $transactionId = @$data->$_p_tran_ref;
         $pOrderId = @$data->$_p_cart_id;
 
@@ -93,17 +109,15 @@ class Ipn extends Action
         //
 
         try {
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+
 
             $is_quote = substr($pOrderId, 0, 1) === "Q";
             if ($is_quote) {
                 $pOrderId = substr($pOrderId, 1);
-                $quote = $objectManager->create('Magento\Quote\Api\CartRepositoryInterface')->get($pOrderId);
-
+                $quote = $this->cartRepository->get($pOrderId);
                 $pOrderId = $quote->getReservedOrderId();
             }
-
-            $order = $objectManager->create('Magento\Sales\Model\Order')->loadByIncrementId($pOrderId);
+            $order = $this->orderModel->loadByIncrementId($pOrderId);
         } catch (\Throwable $th) {
             ClickpayHelper::log("Clickpay (IPN): Order could not be loaded, Order [{$pOrderId}]", 3);
             return;

@@ -51,7 +51,8 @@ class Create extends Action
         \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Customer\Model\Session $customerSession,
-        \Magento\Checkout\Model\Session $checkoutSession
+        \Magento\Checkout\Model\Session $checkoutSession,
+        \ClickPay\PayPage\Gateway\Http\Client\Api $apiClient,
         // \Psr\Log\LoggerInterface $logger
     ) {
         parent::__construct($context);
@@ -66,7 +67,7 @@ class Create extends Action
         $this->_customerSession = $customerSession;
 
         // $this->_logger = $logger;
-        $this->ClickPay = new \ClickPay\PayPage\Gateway\Http\Client\Api;
+        $this->ClickPay = $apiClient;
         new ClickPayCore();
     }
 
@@ -102,6 +103,7 @@ class Create extends Action
         if ($paypage->success) {
             // Create paypage success
             ClickPayHelper::log("ClickPay: create paypage success!, Order [{$order->getIncrementId()}]", 1);
+            ClickPayHelper::log("ClickPay: create paypage success!, Order [{$order->getIncrementId()}] ResponseBody -  ". json_encode($paypage), 1);
 
               // Remove sensetive information
               $res = new stdClass();
@@ -111,7 +113,7 @@ class Create extends Action
   
               $paypage = $res;
         } else {
-            ClickPayHelper::log("ClickPay: create paypage failed!, Order [{$order->getIncrementId()}] - " . json_encode($paypage), 3);
+            ClickPayHelper::log("ClickPay: create paypage failed!, Order [{$order->getIncrementId()}] ResponseBody " . json_encode($paypage), 3);
 
             try {
                 // Create paypage failed, Save the Quote (user's Cart)

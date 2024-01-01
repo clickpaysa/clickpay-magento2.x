@@ -12,9 +12,27 @@ use Magento\Framework\Event\ObserverInterface;
 use ClickPay\PayPage\Gateway\Http\ClickPayCore;
 use ClickPay\PayPage\Gateway\Http\ClickPayHelper;
 use ClickPay\PayPage\Model\Adminhtml\Source\CurrencySelect;
+use Magento\Store\Model\StoreManagerInterface;
+
 
 class PaymentMethodAvailable implements ObserverInterface
 {
+    /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
+
+    /**
+     * YourClass constructor.
+     *
+     * @param StoreManagerInterface $storeManager
+     */
+    public function __construct(
+        StoreManagerInterface $storeManager
+    ) {
+        $this->storeManager = $storeManager;
+    }
+    
     /**
      * payment_method_is_active event handler.
      *
@@ -42,15 +60,13 @@ class PaymentMethodAvailable implements ObserverInterface
 
     private function getCurrency($use_order_currency)
     {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
-
         if ($use_order_currency) {
-            $currencyCode = $storeManager->getStore()->getCurrentCurrency()->getCode();
+            $currencyCode = $this->storeManager->getStore()->getCurrentCurrency()->getCode();
         } else {
-            $currencyCode = $storeManager->getStore()->getBaseCurrency()->getCode();
+            $currencyCode = $this->storeManager->getStore()->getBaseCurrency()->getCode();
         }
 
         return $currencyCode;
     }
+    
 }
