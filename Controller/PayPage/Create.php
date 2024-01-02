@@ -121,6 +121,7 @@ class Create extends Action
                 $quote->setIsActive(true)->removePayment()->save();
             } catch (\Throwable $th) {
                 ClickPayHelper::log("ClickPay: load Quote by ID failed!, QuoteId [{$quoteId}]", 3);
+                
             }
             $order->cancel()->save();
         }
