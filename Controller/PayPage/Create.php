@@ -103,7 +103,7 @@ class Create extends Action
         if ($paypage->success) {
             // Create paypage success
             ClickPayHelper::log("ClickPay: create paypage success!, Order [{$order->getIncrementId()}]", 1);
-            ClickPayHelper::log("ClickPay: create paypage success!, Order [{$order->getIncrementId()}] ResponseBody -  ". json_encode($paypage), 1);
+           
 
               // Remove sensetive information
               $res = new stdClass();
