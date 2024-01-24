@@ -52,7 +52,7 @@ class Create extends Action
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Checkout\Model\Session $checkoutSession,
-        \ClickPay\PayPage\Gateway\Http\Client\Api $apiClient,
+        \ClickPay\PayPage\Gateway\Http\Client\Api $apiClient
         // \Psr\Log\LoggerInterface $logger
     ) {
         parent::__construct($context);
