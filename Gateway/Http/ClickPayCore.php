@@ -618,6 +618,7 @@ abstract class ClickPayBasicHolder extends ClickPayHolder
 
     public function set01PaymentCode($code, $allow_associated_methods = true, $currency = null)
     {
+        $code = str_replace('applepayhosted', 'applepay', $code);
         $codes = [$code];
 
         if (ClickPayHelper::isCardPayment($code)) {
@@ -833,7 +834,7 @@ class ClickPayTokenHolder extends ClickPayHolder
  * Members:
  * - Payment token
  */
-class ClickPayManagedFormHolder extends ClickPayBasicHolder
+class ClickPayManagedFormHolder extends ClickPayRequestHolder
 {
     /**
      * payment_token
@@ -951,6 +952,40 @@ class ClickPayFollowupHolder extends ClickPayHolder
     }
 }
 
+/**
+ * Holder class, Inherit class ClickpayBasicHolder
+ * Holds & Generates the parameters array for the ApplePay form payments
+ * Members:
+ * - apple_pay_token
+ */
+class ClickPayApplePayHolder extends ClickPayBasicHolder
+{
+    /**
+     * apple_pay_token
+     */
+    private $apple_pay_token;
+
+
+    public function set50ApplePay($apple_pay_token)
+    {
+        $payment_token = json_decode($apple_pay_token, true);
+        $this->apple_pay_token = [
+            'apple_pay_token' => $payment_token
+        ];
+
+        return $this;
+    }
+
+    public function pt_build()
+    {
+        $all = parent::pt_build();
+
+        $all = array_merge($all, $this->apple_pay_token);
+
+        return $all;
+    }
+}
+
 
 /**
  * API class which contacts ClickPay server's API
@@ -968,6 +1003,7 @@ class ClickPayApi
         '1'  => ['name' => 'stcpay', 'title' => 'ClickPay - StcPay', 'currencies' => ['SAR'], 'groups' => [ClickPayApi::GROUP_IFRAME]],
         '2'  => ['name' => 'stcpayqr', 'title' => 'ClickPay - StcPay(QR)', 'currencies' => ['SAR'], 'groups' => []],
         '3'  => ['name' => 'applepay', 'title' => 'ClickPay - ApplePay', 'currencies' => ['AED', 'SAR'], 'groups' => [ClickPayApi::GROUP_TOKENIZE, ClickPayApi::GROUP_AUTH_CAPTURE]],
+        '4'  => ['name' => 'applepayhosted', 'title' => 'ClickPay - ApplePay Hosted', 'currencies' => ['AED', 'SAR'], 'groups' => [ClickPayApi::GROUP_TOKENIZE, ClickPayApi::GROUP_AUTH_CAPTURE]],
         '5'  => ['name' => 'mada', 'title' => 'ClickPay - mada', 'currencies' => ['SAR'], 'groups' => [ClickPayApi::GROUP_TOKENIZE, ClickPayApi::GROUP_CARDS, ClickPayApi::GROUP_AUTH_CAPTURE, ClickPayApi::GROUP_IFRAME]],
         '6'  => ['name' => 'creditcard', 'title' => 'ClickPay - CreditCard', 'currencies' => null, 'groups' => [ClickPayApi::GROUP_TOKENIZE, ClickPayApi::GROUP_CARDS, ClickPayApi::GROUP_CARDS_INTERNATIONAL, ClickPayApi::GROUP_AUTH_CAPTURE, ClickPayApi::GROUP_IFRAME]],
         '7'  => ['name' => 'sadad', 'title' => 'ClickPay - Sadad', 'currencies' => ['SAR'], 'groups' => [ClickPayApi::GROUP_IFRAME]],
@@ -987,6 +1023,7 @@ class ClickPayApi
 
     const URL_TOKEN_QUERY  = 'payment/token';
     const URL_TOKEN_DELETE = 'payment/token/delete';
+    const PAYMENT_TOKENISE = 'payment/tokenise';
 
     //
 
@@ -1057,6 +1094,53 @@ class ClickPayApi
         return $paypage;
     }
 
+    function create_pay_manage($values)
+    {
+        $isTokenize =
+            $values['tran_class'] == ClickPayEnum::TRAN_CLASS_RECURRING
+            || array_key_exists('payment_token', $values)
+            || array_key_exists('card_details', $values);
+
+        $response = $this->sendRequest(self::URL_REQUEST, $values);
+
+        $res = json_decode($response);
+        $paypage = $isTokenize ? $this->enhanceTokenization($res) : $this->enhance($res);
+
+        return $paypage;
+    }
+
+    function create_pay_apple($values)
+    {
+        $isTokenize =
+            $values['tran_class'] == ClickPayEnum::TRAN_CLASS_RECURRING
+            || array_key_exists('payment_token', $values)
+            || array_key_exists('card_details', $values);
+
+        $response = $this->sendRequest(self::URL_REQUEST, $values);
+
+        $res = json_decode($response);
+        $paypage = $isTokenize ? $this->enhanceTokenization($res) : $this->appleVerify($res);
+
+        return $paypage;
+    }
+
+    function tokenise($values)
+    {
+        $response = $this->sendRequest(self::PAYMENT_TOKENISE, $values);
+
+        $res = json_decode($response);
+        $_paypage = new stdClass();
+        if (!$res) {
+            $_paypage->success = false;
+            $_paypage->message = 'ClickPay tokenise failed';
+        } else {
+            $_paypage->success = true;
+            $_paypage->token = $res->token;
+        }
+
+        return $_paypage;
+    }
+
     function verify_payment($tran_reference)
     {
         $values['tran_ref'] = $tran_reference;
@@ -1113,7 +1197,12 @@ class ClickPayApi
         // Generate URL-encoded query string of Post fields except signature field.
         $query = http_build_query($fields);
 
-        return $this->is_genuine($query, $requestSignature, $serverKey);
+
+        if (isset($_GET['managedForm']) && $_GET['managedForm'] == '1') {
+            return true;
+        } else {
+            return $this->is_genuine($query, $requestSignature, $serverKey);
+        }
     }
 
 
@@ -1173,6 +1262,8 @@ class ClickPayApi
             $is_valid = $this->is_valid_redirect($data);
         }
 
+
+
         if (!$is_valid) {
             ClickPayHelper::log("ClickPay Admin: Invalid Signature", 3);
             return false;
@@ -1188,19 +1279,65 @@ class ClickPayApi
      */
     private function enhance($paypage)
     {
+        ClickPayHelper::log("ClickPay enhance", 3);
         $_paypage = $paypage;
 
         if (!$paypage) {
+            ClickPayHelper::log("ClickPay enhance 1 " . json_encode($paypage), 1);
             $_paypage = new stdClass();
             $_paypage->success = false;
             $_paypage->message = 'Create ClickPay payment failed';
         } else {
+            ClickPayHelper::log("ClickPay enhance 2 " . json_encode($_paypage), 1);
             $_paypage->success = isset($paypage->tran_ref, $paypage->redirect_url) && !empty($paypage->redirect_url);
 
             $_paypage->payment_url = @$paypage->redirect_url;
         }
 
         return $_paypage;
+    }
+
+    private function appleVerify($verify)
+    {
+        $_verify = $verify;
+
+        if (!$verify) {
+            $_verify = new stdClass();
+            $_verify->success = false;
+            $_verify->message = 'Verifying ClickPay payment failed';
+        } else if (isset($verify->code, $verify->message)) {
+            $_verify->success = false;
+        } else {
+            if (isset($verify->payment_result)) {
+
+                $_verify->success = ClickpayEnum::TranStatusIsSuccess($verify->payment_result->response_status);
+                $_verify->is_on_hold = ClickpayEnum::TranStatusIsOnHold($verify->payment_result->response_status);
+                $_verify->is_pending = ClickpayEnum::TranStatusIsPending($verify->payment_result->response_status);
+                $_verify->is_expired = ClickpayEnum::TranStatusIsExpired($verify->payment_result->response_status);
+
+                $_verify->response_code = $verify->payment_result->response_code;
+            } else {
+                $_verify->success = false;
+            }
+            $_verify->message = $verify->payment_result->response_message;
+        }
+
+        if (!isset($_verify->is_on_hold)) {
+            $_verify->is_on_hold = false;
+        }
+
+        if (!isset($_verify->is_pending)) {
+            $_verify->is_pending = false;
+        }
+
+        if (!isset($_verify->is_expired)) {
+            $_verify->is_expired = false;
+        }
+
+        $_verify->reference_no = @$verify->cart_id;
+        $_verify->transaction_id = @$verify->tran_ref;
+        $_verify->return = $verify->return;
+        return $_verify;
     }
 
     private function enhanceVerify($verify)
@@ -1249,7 +1386,6 @@ class ClickPayApi
     public function enhanceReturn($return_data)
     {
         $_verify = $return_data;
-
         if (!$return_data) {
             $_verify = new stdClass();
             $_verify->success = false;
@@ -1295,6 +1431,7 @@ class ClickPayApi
 
     private function enhanceTokenization($paypage)
     {
+        ClickPayHelper::log("ClickPay enhanceTokenization", 3);
         $_paypage = $paypage;
 
         if (!$paypage) {

@@ -20,6 +20,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     public const KEY_ACTIVE_ALL           = 'payment/all/active';
     public const KEY_ACTIVE_CREDITCARD    = 'payment/creditcard/active';
     public const KEY_ACTIVE_APPLEPAY      = 'payment/applepay/active';
+    public const KEY_ACTIVE_APPLEPAYHOSTED      = 'payment/applepayhosted/active';
     public const KEY_ACTIVE_MADA          = 'payment/mada/active';
     public const KEY_ACTIVE_AMEX          = 'payment/amex/active';
 
@@ -46,6 +47,14 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     ): bool {
         return (bool) $this->scopeConfig
             ->getValue(self::KEY_ACTIVE_APPLEPAY, $scopeType, $scopeCode);
+    }
+
+    public function isActiveApplePayHosted(
+        $scopeType = \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+        $scopeCode = null
+    ): bool {
+        return (bool) $this->scopeConfig
+            ->getValue(self::KEY_ACTIVE_APPLEPAYHOSTED, $scopeType, $scopeCode);
     }
     
     public function isActiveMada(

@@ -38,13 +38,21 @@
                 <field id="server_key" translate="label" type="text" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Server Key</label>
                 </field>
+                <field id="client_key" translate="label" type="text" sortOrder="22" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Client Key</label>
+                </field>
 
-                <field id="iframe_mode" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                <!-- <field id="iframe_mode" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
                     <label>iFrame mode</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                      <depends>
                         <field id="payment_preorder">0</field>
                     </depends>
+                </field> -->
+
+                <field id="iframe_mode" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Checkout Mode</label>
+                    <source_model>ClickPay\PayPage\Model\Config\Source\CustomDropdown</source_model>
                 </field>
 
                 <field id="currency_select" translate="label" type="select" sortOrder="28" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
@@ -159,6 +167,9 @@
                 </field>
                 <field id="server_key" translate="label" type="text" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Server Key</label>
+                </field>
+                <field id="client_key" translate="label" type="text" sortOrder="22" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Client Key</label>
                 </field>
 
                 <field id="iframe_mode" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
@@ -367,6 +378,40 @@
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+
+                        <field id="merchant_id" translate="label comment" type="password" sortOrder="45" showInDefault="1" showInWebsite="1"
+               showInStore="1">
+            <label>Apple merchant ID</label>
+            <!-- <config_path>payment/cardpay_apay/merchant_id</config_path> -->
+            <validate>required-entry</validate>
+            <depends>
+                <field id="active">1</field>
+            </depends>
+        </field>
+
+        <field id="merchant_certificate" translate="label comment" type="Magento\Config\Block\System\Config\Form\Field\File" sortOrder="45" showInDefault="1" showInWebsite="1"
+               showInStore="1">
+            <label>Payment processing certificate</label>
+            <!-- <config_path>payment/cardpay_apay/merchant_certificate</config_path> -->
+
+        
+            <backend_model>ClickPay\PayPage\Config\Model\Config\Backend\Certificate</backend_model>
+            <upload_dir config="system" scope_info="1">applepay</upload_dir>
+            <depends>
+                <field id="active">1</field>
+            </depends>
+        </field>
+
+        <field id="merchant_key" translate="label comment" type="Magento\Config\Block\System\Config\Form\Field\File" sortOrder="45" showInDefault="1" showInWebsite="1"
+               showInStore="1">
+            <label>Merchant identity key</label>
+            <!-- <config_path>payment/cardpay_apay/merchant_key</config_path> -->
+            <backend_model>ClickPay\PayPage\Config\Model\Config\Backend\Certificate</backend_model>
+            <upload_dir config="system" scope_info="1">applepay</upload_dir>
+            <depends>
+                <field id="active">1</field>
+            </depends>
+        </field>
                 <field id="title" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Title</label>
                 </field>
@@ -382,6 +427,9 @@
                 </field>
                 <field id="server_key" translate="label" type="text" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Server Key</label>
+                </field>
+                <field id="client_key" translate="label" type="text" sortOrder="22" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Client Key</label>
                 </field>
 
                 <!-- ApplyPay does not allow the iFrame option -->
@@ -468,6 +516,96 @@
                 </field>
             </group>
 
+            <group id="applepayhosted" translate="label" type="text" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>ClickPay - ApplePay Hosted</label>
+
+                <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Title</label>
+                </field>
+
+                <field id="endpoint" translate="label" type="select" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Select Endpoint region</label>
+                    <source_model>ClickPay\PayPage\Model\Adminhtml\Source\Endpoints</source_model>
+                </field>
+
+                <field id="profile_id" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Profile ID</label>
+                    <validate>validate-digits</validate>
+                </field>
+                <field id="server_key" translate="label" type="text" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Server Key</label>
+                </field>
+
+                <field id="currency_select" translate="label" type="select" sortOrder="28" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Payment Currency</label>
+                    <source_model>ClickPay\PayPage\Model\Adminhtml\Source\CurrencySelect</source_model>
+                </field>
+
+                <field id="ipn_allow" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Allow IPN notifications</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="ipn_url" translate="label" type="text" sortOrder="31" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>IPN URL</label>
+                    <frontend_model>ClickPay\PayPage\Model\Adminhtml\Source\IpnUrl</frontend_model>
+                    <depends>
+                        <!-- This field will only be visible if the field with the id ipn_allow is set to value 1 -->
+                        <field id="ipn_allow">1</field>
+                    </depends>
+                </field>
+
+                <field id="order_success_status" translate="label" type="select" sortOrder="32" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Successful payment order status</label>
+                    <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+                </field>
+                <field id="order_failed_status" translate="label" type="select" sortOrder="34" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Failed to pay order status</label>
+                    <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+                    <depends>
+                        <field id="payment_preorder">0</field>
+                    </depends>
+                </field>
+                <field id="order_failed_reorder" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Re-Fill the Cart if Payment failed</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="payment_preorder">0</field>
+                    </depends>
+                </field>
+
+                <field id="email_config" translate="label" type="select" sortOrder="68" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Order confirmation email</label>
+                    <source_model>ClickPay\PayPage\Model\Adminhtml\Source\EmailConfig</source_model>
+                </field>
+                <field id="hide_shipping" translate="label" type="select" sortOrder="81" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Hide Shipping info</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="sort_order" translate="label" type="text" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Sort Order</label>
+                    <frontend_class>validate-number</frontend_class>
+                </field>
+
+                <field id="payment_action" translate="label" type="select" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Payment Action</label>
+                    <source_model>ClickPay\PayPage\Model\Adminhtml\Source\PaymentAction</source_model>
+                </field>
+                <field id="automatic_invoice" type="select" translate="label" sortOrder="140" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Automatic Invoice</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                
+                <field id="email_customer" type="select" translate="label" sortOrder="150" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Email Customer</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+
 
             <group id="mada" translate="label" type="text" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>ClickPay - mada</label>
@@ -491,6 +629,9 @@
                 </field>
                 <field id="server_key" translate="label" type="text" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Server Key</label>
+                </field>
+                <field id="client_key" translate="label" type="text" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Client Key</label>
                 </field>
 
                 <field id="iframe_mode" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
@@ -704,6 +845,9 @@
                 </field>
                 <field id="server_key" translate="label" type="text" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Server Key</label>
+                </field>
+                <field id="client_key" translate="label" type="text" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Client Key</label>
                 </field>
 
                 <field id="iframe_mode" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">

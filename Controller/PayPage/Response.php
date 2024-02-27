@@ -145,76 +145,20 @@ class Response extends Action
         $res_msg = $verify_response->message;
         $orderId = @$verify_response->reference_no;
 
-
-        if ($this->getActiveAll() == true && $success == true && $this->getAutomaticInvoiceAll() == true) {
+        // if ($success == true && $this->getAutomaticInvoice() == true) {
             $invoice = $this->createMagentoInvoice($order);
             $invoiceId = $invoice->getId();
             $payment = $order->getPayment();
             $payment->setTransactionId($invoiceId);
-            if($this->getEmailCustomerAll() == true){
+            // if($this->getEmailCustomer() == true){
                 try {
                     $this->sendInvoiceEmail($invoice);
                 } catch (\Exception $e) {
                     echo "Error sending invoice email: " . $e->getMessage();
                 }
-            }
-        }
+            // }
+        // }
 
-        if ($this->getActiveCreditCard() == true && $success == true && $this->getAutomaticInvoiceCreditCard() == true) {
-            $invoice = $this->createMagentoInvoice($order);
-            $invoiceId = $invoice->getId();
-            $payment = $order->getPayment();
-            $payment->setTransactionId($invoiceId);
-            if($this->getEmailCustomerCreditCard() == true){
-                try {
-                    $this->sendInvoiceEmail($invoice);
-                } catch (\Exception $e) {
-                    echo "Error sending invoice email: " . $e->getMessage();
-                }
-            }
-        }
-
-        if ($this->getActiveApplePay() == true && $success == true && $this->getAutomaticInvoiceApplePay() == true) {
-            $invoice = $this->createMagentoInvoice($order);
-            $invoiceId = $invoice->getId();
-            $payment = $order->getPayment();
-            $payment->setTransactionId($invoiceId);
-            if($this->getEmailCustomerApplePay() == true){
-                try {
-                    $this->sendInvoiceEmail($invoice);
-                } catch (\Exception $e) {
-                    echo "Error sending invoice email: " . $e->getMessage();
-                }
-            }
-        }
-
-        if ($this->getActiveMada() == true && $success == true && $this->getAutomaticInvoiceMada() == true) {
-            $invoice = $this->createMagentoInvoice($order);
-            $invoiceId = $invoice->getId();
-            $payment = $order->getPayment();
-            $payment->setTransactionId($invoiceId);
-            if($this->getEmailCustomerMada() == true){
-                try {
-                    $this->sendInvoiceEmail($invoice);
-                } catch (\Exception $e) {
-                    echo "Error sending invoice email: " . $e->getMessage();
-                }
-            }
-        }
-
-        if ($this->getActiveAmexCard() == true && $success == true && $this->getAutomaticInvoiceAmex() == true) {
-            $invoice = $this->createMagentoInvoice($order);
-            $invoiceId = $invoice->getId();
-            $payment = $order->getPayment();
-            $payment->setTransactionId($invoiceId);
-            if($this->getEmailCustomerAmex() == true){
-                try {
-                    $this->sendInvoiceEmail($invoice);
-                } catch (\Exception $e) {
-                    echo "Error sending invoice email: " . $e->getMessage();
-                }
-            }
-        }
         
         if ($success) {
             $this->messageManager->addSuccessMessage('The payment has been completed successfully - ' . $res_msg);
@@ -255,81 +199,16 @@ class Response extends Action
         return $invoice;
     }
 
-    public function getActiveAll()
-    {
-        return $this->configHelper->isActiveAll();
-    }
 
-    public function getActiveCreditCard()
-    {
-        return $this->configHelper->isActiveCreditCard();
-    }
+    // public function getAutomaticInvoice()
+    // {
+    //     return $this->configHelper->isAutomaticInvoice();
+    // }
 
-    public function getActiveApplePay()
-    {
-        return $this->configHelper->isActiveApplePay();
-    }
-
-    public function getActiveMada()
-    {
-        return $this->configHelper->isActiveMada();
-    }
-
-    public function getActiveAmexCard()
-    {
-        return $this->configHelper->isActiveAmexCard();
-    }
-
-    public function getAutomaticInvoiceAll()
-    {
-        return $this->configHelper->isAutomaticInvoiceAll();
-    }
-
-    public function getEmailCustomerAll()
-    {
-        return $this->configHelper->isEmailCustomerAll();
-    }
-
-    public function getAutomaticInvoiceCreditCard()
-    {
-        return $this->configHelper->isAutomaticInvoiceCreditCard();
-    }
-    
-    public function getEmailCustomerCreditCard()
-    {
-        return $this->configHelper->isEmailCustomerCreditCard();
-    }
-
-    public function getAutomaticInvoiceApplePay()
-    {
-        return $this->configHelper->isAutomaticInvoiceApplePay();
-    }
-
-    public function getEmailCustomerApplePay()
-    {
-        return $this->configHelper->isEmailCustomerApplePay();
-    }
-
-    public function getAutomaticInvoiceMada()
-    {
-        return $this->configHelper->isAutomaticInvoiceMada();
-    }
-
-    public function getEmailCustomerMada()
-    {
-        return $this->configHelper->isEmailCustomerMada();
-    }
-
-    public function getAutomaticInvoiceAmex()
-    {
-        return $this->configHelper->isAutomaticInvoiceAmex();
-    }
-
-    public function getEmailCustomerAmex()
-    {
-        return $this->configHelper->isEmailCustomerAmex();
-    }
-
+    // public function getEmailCustomer()
+    // {
+    //     return $this->configHelper->isEmailCustomer();
+    // }
 
     private function sendInvoiceEmail($invoice)
     {

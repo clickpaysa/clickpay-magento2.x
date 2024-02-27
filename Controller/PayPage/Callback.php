@@ -159,7 +159,8 @@ class Callback extends Action
         $paymentFailed =
             $paymentMethod->getConfigData('order_failed_status') ?? Order::STATE_CANCELED;
 
-        $sendInvoice = (bool) $paymentMethod->getConfigData('send_invoice');
+        $sendInvoice = (bool) $paymentMethod->getConfigData('automatic_invoice');
+        $sendInvoiceEmail = (bool) $paymentMethod->getConfigData('email_customer');
         $emailConfig = $paymentMethod->getConfigData('email_config');
         // $cart_refill = (bool) $paymentMethod->getConfigData('order_failed_reorder');
         $use_order_currency = CurrencySelect::UseOrderCurrency($payment);
@@ -243,7 +244,7 @@ class Callback extends Action
         }
 
         $payment->setAmountAuthorized($payment->getAmountOrdered());
-        
+
 
         if (ClickPayEnum::TranIsSale($transaction_type)) {
 
@@ -281,6 +282,11 @@ class Callback extends Action
 
             $this->pt_manage_tokenize($this->_paymentTokenFactory, $this->encryptor, $payment, $verify_response);
 
+            if ($sendInvoice && $sendInvoiceEmail) {
+                $invoice = $order->getInvoiceCollection()->getFirstItem();
+                $this->_invoiceSender->send($invoice);
+            }
+
             //
         } elseif ($is_on_hold) {
             $order->hold();
@@ -295,5 +301,4 @@ class Callback extends Action
 
         ClickPayHelper::log("Order {$orderId}, Message [$res_msg]", 1);
     }
-
 }

@@ -32,7 +32,7 @@ class PaymentMethodAvailable implements ObserverInterface
     ) {
         $this->storeManager = $storeManager;
     }
-    
+
     /**
      * payment_method_is_active event handler.
      *
@@ -52,8 +52,23 @@ class PaymentMethodAvailable implements ObserverInterface
             if ($checkResult->getData('is_available')) {
                 $use_order_currency = CurrencySelect::IsOrderCurrency($paymentMethod);
                 $currency = $this->getCurrency($use_order_currency);
-                $isAllowed = ClickPayHelper::paymentAllowed($code, $currency);
-                $checkResult->setData('is_available', $isAllowed);
+                // Check if the payment method is Apple Pay
+                if ($code === 'applepay') {
+                    $userAgent = $_SERVER['HTTP_USER_AGENT'];
+                    // Check if the user agent indicates an Apple device
+                    if ((strpos($userAgent, 'iPhone') !== false || strpos($userAgent, 'iPad') !== false || (strpos($userAgent, 'Macintosh') !== false && strpos($userAgent, 'Intel Mac OS X') !== false)) && strpos($userAgent, 'Safari') !== false && strpos($userAgent, 'Chrome') === false) {
+                        // User is on an Apple device, allow the Apple Pay payment method
+                        $isAllowed = ClickPayHelper::paymentAllowed($code, $currency);
+                        $checkResult->setData('is_available', $isAllowed);
+                    } else {
+                        // User is not on an Apple device, disallow the Apple Pay payment method
+                        $checkResult = $observer->getEvent()->getResult();
+                        $checkResult->setData('is_available', false);
+                    }
+                } else {
+                    $isAllowed = ClickPayHelper::paymentAllowed($code, $currency);
+                    $checkResult->setData('is_available', $isAllowed);
+                }
             }
         }
     }
@@ -68,5 +83,4 @@ class PaymentMethodAvailable implements ObserverInterface
 
         return $currencyCode;
     }
-    
 }

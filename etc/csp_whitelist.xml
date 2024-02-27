@@ -7,6 +7,7 @@
                 <value id="ClickPay-iframe" type="host">*.clickpay.com</value>
                 <value id="ClickPay-sa-iframe" type="host">*.clickpay.com.sa</value>
                 <value id="ClickPay-3ds" type="host">*</value>
+                  <value id="clickpay-script" type="host">https://secure.clickpay.com.sa</value>
             </values>
         </policy>
 
@@ -18,3 +19,5 @@
 
     </policies>
 </csp_whitelist>
+
+

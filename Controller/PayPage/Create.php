@@ -14,6 +14,7 @@ use ClickPay\PayPage\Gateway\Http\Client\Api;
 use ClickPay\PayPage\Gateway\Http\ClickPayCore;
 use ClickPay\PayPage\Gateway\Http\ClickPayHelper;
 use Magento\Vault\Model\Ui\VaultConfigProvider;
+use ClickPay\PayPage\Helper\Data as ClickPayHelperData; 
 use stdClass;
 
 /**
@@ -31,7 +32,7 @@ class Create extends Action
     protected $quoteRepository;
     protected $checkoutSession;
     protected $_customerSession;
-
+    private $clickPayHelperData; // Inject the helper class
     private $ClickPay;
 
     /**
@@ -52,8 +53,9 @@ class Create extends Action
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Checkout\Model\Session $checkoutSession,
-        \ClickPay\PayPage\Gateway\Http\Client\Api $apiClient
-        // \Psr\Log\LoggerInterface $logger
+        \ClickPay\PayPage\Gateway\Http\Client\Api $apiClient,
+        ClickPayHelperData $clickPayHelperData 
+
     ) {
         parent::__construct($context);
         $this->_orderFactory = $orderFactory;
@@ -62,9 +64,9 @@ class Create extends Action
         $this->orderRepository = $orderRepository;
         $this->quoteRepository = $quoteRepository;
 
-
         $this->checkoutSession = $checkoutSession;
         $this->_customerSession = $customerSession;
+        $this->clickPayHelperData = $clickPayHelperData; // Assign the injected helper class
 
         // $this->_logger = $logger;
         $this->ClickPay = $apiClient;
@@ -77,6 +79,9 @@ class Create extends Action
     public function execute()
     {
         $result = $this->jsonResultFactory->create();
+
+        $iframeMode = $this->clickPayHelperData->getIframeMode();
+
 
         // Get the params that were passed from our Router
         $quoteId = $this->getRequest()->getParam('quote', null);
@@ -103,7 +108,6 @@ class Create extends Action
         if ($paypage->success) {
             // Create paypage success
             ClickPayHelper::log("ClickPay: create paypage success!, Order [{$order->getIncrementId()}]", 1);
-           
 
               // Remove sensetive information
               $res = new stdClass();
@@ -113,7 +117,7 @@ class Create extends Action
   
               $paypage = $res;
         } else {
-            ClickPayHelper::log("ClickPay: create paypage failed!, Order [{$order->getIncrementId()}] ResponseBody " . json_encode($paypage), 3);
+            ClickPayHelper::log("ClickPay: create paypage failed!, Order [{$order->getIncrementId()}] - " . json_encode($paypage), 3);
 
             try {
                 // Create paypage failed, Save the Quote (user's Cart)
@@ -121,7 +125,6 @@ class Create extends Action
                 $quote->setIsActive(true)->removePayment()->save();
             } catch (\Throwable $th) {
                 ClickPayHelper::log("ClickPay: load Quote by ID failed!, QuoteId [{$quoteId}]", 3);
-                
             }
             $order->cancel()->save();
         }
@@ -147,6 +150,7 @@ class Create extends Action
         $isTokenise = $payment->getAdditionalInformation(VaultConfigProvider::IS_ACTIVE_CODE);
          $isLoggedIn = $this->_customerSession->isLoggedIn();
         $values = $this->ClickPay->prepare_order($order, $paymentMethod, $isTokenise, false, $isLoggedIn);
+        ClickPayHelper::log("ClickPay: create paypage, Values - " . json_encode($values), 3);
 
         $res = $ptApi->create_pay_page($values);
 

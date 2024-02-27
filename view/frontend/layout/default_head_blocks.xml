@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+  
+  <head>
+          <script src="ClickPay_PayPage::js/paylib.js"></script>
+    
+  </head>
+  <body>
+          <referenceBlock name="cookie-status-check" remove="true"/>
+
+        <referenceBlock name="head.additional">
+            <block class="Magento\Framework\View\Element\Template" name="clickpay.head.script" template="ClickPay_PayPage::clickpay/clickpay-script.phtml"/>
+        </referenceBlock>
+    </body>
+</page>

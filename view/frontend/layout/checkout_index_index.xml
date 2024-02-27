@@ -6,7 +6,13 @@
  */
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <head>
+        <script src="ClickPay_PayPage::js/apple-pay-sdk.js"/>
+    </head>
     <body>
+          <!-- <referenceBlock name="head.additional">
+            <block class="Magento\Framework\View\Element\Template" name="clickpay.head.script" template="ClickPay_PayPage::clickpay/clickpay-script.phtml"/>
+        </referenceBlock> -->
         <referenceBlock name="checkout.root">
             <arguments>
                 <argument name="jsLayout" xsi:type="array">
@@ -59,6 +65,14 @@
                                                                     </item>
                                                                 </item>
 
+                                                                <item name="paypage-applepayhosted" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">ClickPay_PayPage/js/view/payment/applepayhosted</item>
+                                                                    <item name="methods" xsi:type="array">
+                                                                        <item name="applepayhosted" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+                                                                        </item>
+                                                                    </item>
+                                                                </item>
 
                                                                 <item name="paypage-mada" xsi:type="array">
                                                                     <item name="component" xsi:type="string">ClickPay_PayPage/js/view/payment/mada</item>
@@ -105,5 +119,6 @@
                 </argument>
             </arguments>
         </referenceBlock>
+       
     </body>
 </page>

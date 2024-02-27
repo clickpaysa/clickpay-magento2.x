@@ -21,7 +21,7 @@
                 <endpoint>ARE</endpoint>
                 <payment_action>authorize_capture</payment_action>
 
-                <order_failed_reorder>0</order_failed_reorder>
+                <order_failed_reorder>1</order_failed_reorder>
 
                 <iframe_mode>0</iframe_mode>
 
@@ -66,13 +66,13 @@
                 <endpoint>ARE</endpoint>
                 <payment_action>authorize_capture</payment_action>
 
-                <order_failed_reorder>0</order_failed_reorder>
+                <order_failed_reorder>1</order_failed_reorder>
 
                 <iframe_mode>0</iframe_mode>
 
                 <currency_select>base_currency</currency_select>
 
-                <allow_associated_methods>1</allow_associated_methods>
+                <allow_associated_methods>0</allow_associated_methods>
 
                 <can_initialize>1</can_initialize>
                 <can_authorize>1</can_authorize>
@@ -146,9 +146,13 @@
                 <endpoint>ARE</endpoint>
                 <payment_action>authorize_capture</payment_action>
 
+                <order_failed_reorder>1</order_failed_reorder>
+
                 <iframe_mode>0</iframe_mode>
 
                 <currency_select>base_currency</currency_select>
+
+                <allow_associated_methods>1</allow_associated_methods>
 
                 <can_initialize>1</can_initialize>
                 <can_authorize>1</can_authorize>
@@ -157,16 +161,55 @@
                 <can_void>1</can_void>
                 <can_cancel>1</can_cancel>
                 <can_refund>1</can_refund>
-                <can_refund_partial_per_invoice>0</can_refund_partial_per_invoice>
+                <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+
+                <can_use_checkout>1</can_use_checkout>
+                <!-- <can_use_internal>1</can_use_internal> -->
+
+                <can_review_payment>0</can_review_payment>
+                <can_deny_payment>0</can_deny_payment>
+
+                <is_gateway>1</is_gateway>
+                <is_offline>0</is_offline>
+                <hosted>0</hosted>
+
+
+                <sort_order>12</sort_order>
+                <payment_preorder>0</payment_preorder>
+            </applepay>
+
+            <applepayhosted>
+                <active>0</active>
+                <title>ClickPay - ApplePay</title>
+                <order_status>pending_payment</order_status>
+                <model>PayPageApplePayHostedFacade</model>
+                <hide_shipping>0</hide_shipping>
+
+                <endpoint>ARE</endpoint>
+                <payment_action>authorize_capture</payment_action>
+
+                <iframe_mode>0</iframe_mode>
+
+                <currency_select>base_currency</currency_select>
+
+                <allow_associated_methods>0</allow_associated_methods>
+                <order_failed_reorder>1</order_failed_reorder>
+                <can_initialize>1</can_initialize>
+                <can_authorize>1</can_authorize>
+                <can_capture>1</can_capture>
+                <can_capture_partial>1</can_capture_partial>
+                <can_void>1</can_void>
+                <can_cancel>1</can_cancel>
+                <can_refund>1</can_refund>
+                <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
 
                 <can_use_checkout>1</can_use_checkout>
 
                 <is_gateway>1</is_gateway>
                 <is_offline>0</is_offline>
 
-                <sort_order>12</sort_order>
-            </applepay>
-
+                <sort_order>1</sort_order>
+            </applepayhosted>
 
             <mada>
                 <active>0</active>
@@ -184,8 +227,8 @@
 
                 <currency_select>base_currency</currency_select>
 
-                <allow_associated_methods>1</allow_associated_methods>
-
+                <allow_associated_methods>0</allow_associated_methods>
+                <order_failed_reorder>1</order_failed_reorder>
                 <can_initialize>1</can_initialize>
                 <can_authorize>1</can_authorize>
                 <can_capture>1</can_capture>
@@ -254,8 +297,8 @@
 
                 <currency_select>base_currency</currency_select>
 
-                <allow_associated_methods>1</allow_associated_methods>
-
+                <allow_associated_methods>0</allow_associated_methods>
+                <order_failed_reorder>1</order_failed_reorder>
                 <can_initialize>1</can_initialize>
                 <can_authorize>1</can_authorize>
                 <can_capture>1</can_capture>

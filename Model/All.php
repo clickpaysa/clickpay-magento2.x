@@ -27,9 +27,7 @@ class All extends \Magento\Payment\Model\Method\Adapter
      *
      * @var bool
      */
-    // protected $_isOffline = false;
-
-    //
+    protected $_isOffline = false;
 
     public function getConfigPaymentAction()
     {

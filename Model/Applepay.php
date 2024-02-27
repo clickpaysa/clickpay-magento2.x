@@ -12,7 +12,7 @@ namespace ClickPay\PayPage\Model;
 /**
  * Pay In Store payment method model
  */
-class Creditcard extends \Magento\Payment\Model\Method\Adapter
+class Applepay extends \Magento\Payment\Model\Method\Adapter
 {
 
     /**
@@ -20,10 +20,14 @@ class Creditcard extends \Magento\Payment\Model\Method\Adapter
      *
      * @var string
      */
-    protected $_code = 'creditcard';
+    protected $_code = 'applepay';
 
+    /**
+     * Availability option
+     *
+     * @var bool
+     */
     protected $_isOffline = false;
-
 
     public function isInitializeNeeded()
     {

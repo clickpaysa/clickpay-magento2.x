@@ -18,6 +18,17 @@
         <method name="stcpay">
             <allow_multiple_address>0</allow_multiple_address>
         </method>
-
+        <method name="applepay">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <method name="applepayhosted">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <method name="mada">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <method name="amex">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
     </methods>
 </payment>

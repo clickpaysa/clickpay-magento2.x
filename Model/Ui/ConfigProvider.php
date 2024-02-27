@@ -16,6 +16,7 @@ final class ConfigProvider implements ConfigProviderInterface
     const CODE_MADA       = 'mada';
     const CODE_SADAD      = 'sadad';
     const CODE_AMEX       = 'amex';
+    const CODE_APPLEPAY_HOSTED = 'applepayhosted';
 
     const CODE_VAULT_ALL = 'ClickPay_all_vault';
 
@@ -52,6 +53,9 @@ final class ConfigProvider implements ConfigProviderInterface
             self::CODE_APPLEPAY => [
                 'icon' => 'applepay.svg'
             ],
+            self::CODE_APPLEPAY_HOSTED => [
+                'icon' => 'applepay.svg'
+            ],
             self::CODE_MADA => [
                 'icon' => 'mada.svg'
             ],
@@ -67,8 +71,8 @@ final class ConfigProvider implements ConfigProviderInterface
             ],
         ];
 
-        $keys_bool = ['iframe_mode', 'payment_preorder', 'exclude_shipping'];
-        $keys = ['currency_select'];
+        $keys_bool = ['payment_preorder', 'exclude_shipping'];
+        $keys = ['client_key', 'iframe_mode', 'currency_select'];
 
         $_icons_path = $this->assetRepo->getUrl("ClickPay_PayPage::images/");
 
