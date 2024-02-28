@@ -79,15 +79,17 @@ To Disable/Enable the module:
 1. Navigate to `"Magento admin panel" >> Stores >> Configuration`
 2. Open `"Sales >> Payment Methods`
 3. Select the Apple Pay method from the available list of ClickPay payment methods
-4. Please find the setup below for the apple pay certificate creation
-5. Enter the primary credentials:
+4. Please find the setup section below for the apple pay certificate creation
+5. Once certificates created upload the certificates in admin panel
+6. Add the Merchnat identifier name
+7. Enter the primary credentials:
    - **Profile ID**: Enter the Profile ID of your ClickPay account
    - **Server Key**: `Merchant’s Dashboard >> Developers >> Key management >> Server Key`
    - **Client Key**: `Merchant’s Dashboard >> Developers >> Key management >> Server Key`
-6. Click `Save Config`
+8. Click `Save Config`
 
 
-#Setup
+## Setup
 You must have a Apple Developer Account To use this Feature
 The Domain URL which you want to display the ApplePay Button. It should be verfied under same Apple Developer Account and under same merchant ID which you will create Certificates
 image
