@@ -20,7 +20,7 @@ The Official Magento2 plugin for ClickPay
 - - -
 ### Install using `Composer`
 
-1. `composer require clickpay/magento2`
+1. `composer require clickpay/paypage`
 2. `php bin/magento setup:upgrade`
 3. `php bin/magento setup:static-content:deploy`
 4. `php bin/magento cache:clean`
