@@ -2,7 +2,7 @@
 <p align="center"><i>The Official Magento2 plugin for ClickPay</i></p>
 <div align="center">
    <h2 align="center">Plugin features</h2>
-<h4>Manged Form</h4>
+<h4>Embeded Form</h4>
 <h4>Direct Apple Pay</h4>
 <h4>Real Refund from Magento (credit Memo)</h4>
 <h4>Automatic Invoice</h4>
