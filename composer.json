@@ -1,5 +1,5 @@
 {
-    "name": "clickpay/Mangento_V4",
+    "name": "clickpay/magento_V4",
     "type": "magento2-module",
     "description": "3rd party payment gateway",
     "version": "3.9.2",
