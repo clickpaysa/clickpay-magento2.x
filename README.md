@@ -42,18 +42,71 @@ To Disable/Enable the module:
 
 - - -
 
-## Configure the Plugin
+## Configure the Plugin for normal redirect and iframe
 
 1. Navigate to `"Magento admin panel" >> Stores >> Configuration`
 2. Open `"Sales >> Payment Methods`
 3. Select the preferred payment method from the available list of ClickPay payment methods
 4. Enable the `Payment Gateway`
+5. Enable hosted or iframe method
+6. Enable automatic invoice
+7. Enter the primary credentials:
+   - **Profile ID**: Enter the Profile ID of your ClickPay account
+   - **Server Key**: `Merchant’s Dashboard >> Developers >> Key management >> Server Key`
+   - **Client Key**: `Merchant’s Dashboard >> Developers >> Key management >> Server Key`
+8. Click `Save Config`
+
+
+- - -
+
+## Configure the Plugin for Managed form
+
+1. Navigate to `"Magento admin panel" >> Stores >> Configuration`
+2. Open `"Sales >> Payment Methods`
+3. Enable the `Payment Gateway`
+4. Enable Managed form in the frame option
+5. Enable automatic invoice
+6. Enter the primary credentials:
+   - **Profile ID**: Enter the Profile ID of your ClickPay account
+   - **Server Key**: `Merchant’s Dashboard >> Developers >> Key management >> Server Key`
+   - **Client Key**: `Merchant’s Dashboard >> Developers >> Key management >> Server Key`
+7. Click `Save Config`
+8. Contact Clickpay Technical team for whitlisting you server for having this feature.
+- - -
+
+## Configure the Plugin for Direct APPle Pay on your website
+
+1. Navigate to `"Magento admin panel" >> Stores >> Configuration`
+2. Open `"Sales >> Payment Methods`
+3. Select the Apple Pay method from the available list of ClickPay payment methods
+4. Please find the setup below for the apple pay certificate creation
 5. Enter the primary credentials:
    - **Profile ID**: Enter the Profile ID of your ClickPay account
    - **Server Key**: `Merchant’s Dashboard >> Developers >> Key management >> Server Key`
+   - **Client Key**: `Merchant’s Dashboard >> Developers >> Key management >> Server Key`
 6. Click `Save Config`
 
-- - -
+
+#Setup
+You must have a Apple Developer Account To use this Feature
+The Domain URL which you want to display the ApplePay Button. It should be verfied under same Apple Developer Account and under same merchant ID which you will create Certificates
+image
+
+Create two certificates (Apple Pay Payment Processing Certificate & Apple Pay Merchant Identity Certificate)
+
+Create Apple Pay Payment Processing Certificate using below Link
+
+https://support.clickpay.com.sa/en/support/solutions/articles/73000593115-how-to-configure-apple-pay-certificate-in-my-clickpay-dashboard-
+Create Apple Pay Merchant Identity Certificate using below Steps
+
+* openssl req -sha256 -nodes -newkey rsa:2048 -keyout merchant-cert.key -out merchant-cert.csr   (Create the CSR and Key File)
+
+Upload the CSR in Apple Developer portal to create merchant identifier
+
+Once Created Download the Certificate and Convert the downloaded cer to crt using below command
+
+* openssl x509 -inform der -in merchant_id.cer -out merchant-cert.crt
+
 
 ## Log Access
 
