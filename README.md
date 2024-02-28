@@ -74,7 +74,7 @@ To Disable/Enable the module:
 8. Contact Clickpay Technical team for whitlisting you server for having this feature.
 - - -
 
-## Configure the Plugin for Direct APPle Pay on your website
+## Configure the Plugin for Direct Apple Pay on your website
 
 1. Navigate to `"Magento admin panel" >> Stores >> Configuration`
 2. Open `"Sales >> Payment Methods`
