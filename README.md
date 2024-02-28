@@ -27,7 +27,7 @@
 - - -
 ### Install using `Composer`
 
-1. `composer require clickpay/paypage`
+1. `composer require clickpay/magento_v4`
 2. `php bin/magento setup:upgrade`
 3. `php bin/magento setup:static-content:deploy`
 4. `php bin/magento cache:clean`
