@@ -103,8 +103,10 @@ To Disable/Enable the module:
 5. Create Apple Pay Merchant Identity Certificate using below Steps
 
        openssl req -sha256 -nodes -newkey rsa:2048 -keyout merchant-cert.key -out merchant-cert.csr   (Create the CSR and Key File)
+   
        Upload the CSR in Apple Developer portal to create merchant identifier
        Once Created Download the Certificate and Convert the downloaded cer to crt using below command
+   
        openssl x509 -inform der -in merchant_id.cer -out merchant-cert.crt
 
 
