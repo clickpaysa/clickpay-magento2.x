@@ -82,11 +82,14 @@ To Disable/Enable the module:
 4. Please find the setup section below for the apple pay certificate creation
 5. Once certificates created upload the certificates in admin panel
 6. Add the Merchnat identifier name
-7. Enter the primary credentials:
+
+   <img width="809" alt="Screenshot 2024-02-28 at 11 02 44 AM" src="https://github.com/clickpaysa/clickpay-magento2.x/assets/135695828/75893cf4-5159-47c6-a5bf-7b7e3a200c62">
+
+8. Enter the primary credentials:
    - **Profile ID**: Enter the Profile ID of your ClickPay account
    - **Server Key**: `Merchant’s Dashboard >> Developers >> Key management >> Server Key`
    - **Client Key**: `Merchant’s Dashboard >> Developers >> Key management >> Server Key`
-8. Click `Save Config`
+9. Click `Save Config`
 
 
 ## Setup
