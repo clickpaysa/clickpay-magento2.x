@@ -56,7 +56,26 @@ div#expirationdate {
 .field-container {
     position: relative;
 }
+:lang(ar) {
+  .form-container {
+    display: grid;
+    grid-column-gap: 10px;
+    grid-template-columns: auto auto;
+    grid-template-rows: 90px 90px 90px;
+    grid-template-areas: "name name""number number""expiration security";
+    max-width: 400px;
+    text-align: left!important;
+    padding: 20px;
+    color: #707070;
+    direction: ltr!important;
+}
 
+label {
+    padding-bottom: 0px!important;
+    font-size: 13px;
+}  
+}
+    
 .form-container {
     display: grid;
     grid-column-gap: 10px;
@@ -72,25 +91,6 @@ label {
     padding-bottom: 5px;
     font-size: 13px;
 }
-    
-/* .form-container {
-    display: grid;
-    grid-column-gap: 10px;
-    grid-template-columns: auto auto;
-    grid-template-rows: 90px 90px 90px;
-    grid-template-areas: "name name""number number""expiration security";
-    max-width: 400px;
-    /* padding: 20px; */
-    color: #707070;
-    direction: ltr;
-    text-align: left;
-}
-
-label {
-    padding-bottom: 0px;
-    font-size: 14px;
-    font-weight: bold;
-} */
 
 .ccicon {
     height: 28px;
