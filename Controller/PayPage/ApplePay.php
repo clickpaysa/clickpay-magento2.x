@@ -83,9 +83,9 @@ class ApplePay extends Action
 
         $result = $this->sendRequest($validationUrl, $applePayData);
 
-        // return $this->resultJsonFactory->create()->setData(['result' => $result]);
+        $resultArray = json_decode($result, true);
 
-        echo  $result;
+        return $this->resultJsonFactory->create()->setData($resultArray);
     }
 
     /**
