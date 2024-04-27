@@ -122,7 +122,10 @@ class AppleRedirect extends Action
             return $result;
         }
 
-        $paypage = $this->prepare($quote, $isTokenise, $methodCode, $isLoggedIn, $token);
+        $customeremail = $this->checkoutSession->getQuote()->getCustomerEmail();
+        ClickPayHelper::log("QuoteData : ". json_encode($quote->getData()), 1);
+
+        $paypage = $this->prepare($quote, $isTokenise, $methodCode, $isLoggedIn, $token, $customeremail);
         ClickPayHelper::log("ApplePay - Redirect applePayData ". json_encode($paypage), 1);
 
         if ($paypage->success) {
@@ -155,7 +158,7 @@ class AppleRedirect extends Action
     }
 
 
-    function prepare($quote, $isTokenise, $methodCode, $isLoggedIn, $token)
+    function prepare($quote, $isTokenise, $methodCode, $isLoggedIn, $token, $customeremail)
     {
         $paymentMethod = $this->_confirmPaymentMethod($quote, $methodCode);
 
@@ -171,7 +174,7 @@ class AppleRedirect extends Action
 
         // $isTokenise = $payment->getAdditionalInformation(VaultConfigProvider::IS_ACTIVE_CODE);
         // $a = $payment->getAdditionalInformation('pt_registered_transaction');
-        $values = $this->ClickPay->prepare_apple_order($quote, $paymentMethod, $isTokenise, true, $isLoggedIn, $token);
+        $values = $this->ClickPay->prepare_apple_order($quote, $paymentMethod, $isTokenise, true, $isLoggedIn, $token, $customeremail);
 
         $res = $ptApi->create_pay_apple($values);
 

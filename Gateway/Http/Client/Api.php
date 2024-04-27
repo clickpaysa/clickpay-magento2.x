@@ -405,7 +405,7 @@ class Api
         return $post_arr;
     }
 
-    public function prepare_apple_order($order, $paymentMethod, $isTokenise, $preApprove, $isLoggedIn, $token)
+    public function prepare_apple_order($order, $paymentMethod, $isTokenise, $preApprove, $isLoggedIn, $token, $customeremail)
     {
         /** 1. Read required Params */
 
@@ -538,6 +538,8 @@ class Api
                 break;
         }
 
+        $email = ($billingAddress->getEmail() !== null ) ? $billingAddress->getEmail() : $customeremail;
+
         /** 2. Fill post array */
 
         $pt_holder = new ClickPayApplePayHolder();
@@ -547,7 +549,7 @@ class Api
             ->set03Cart($orderId, $currency, $amount, $cart_desc)
             ->set04CustomerDetails(
                 $billingAddress->getName(),
-                $billingAddress->getEmail(),
+                $email,
                 $billingAddress->getTelephone(),
                 $billing_address,
                 $billingAddress->getCity(),
