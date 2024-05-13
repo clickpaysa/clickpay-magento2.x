@@ -92,7 +92,7 @@ class Api
             $orderId = $order->getIncrementId();
 
             $returnUrl = $baseurl . "clickpay/paypage/response" . ($isLoggedIn ? "" : ($cart_refill ? "?g=1" : ""));
-            $callbackUrl = $baseurl . "clickpay/paypage/callback";
+            $callbackUrl = $baseurl . "clickpay/paypage/responsepree";
         }
 
         $lang_code = $localeResolver->getLocale();
@@ -539,6 +539,7 @@ class Api
         }
 
         $email = ($billingAddress->getEmail() !== null ) ? $billingAddress->getEmail() : $customeremail;
+
 
         /** 2. Fill post array */
 
