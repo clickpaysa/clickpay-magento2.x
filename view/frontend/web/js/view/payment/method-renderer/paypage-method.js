@@ -5,6 +5,7 @@ define([
   "mage/url",
   "Magento_Ui/js/modal/alert",
   "Magento_Vault/js/view/payment/vault-enabler",
+  'Magento_Checkout/js/checkout-data',
   "Magento_Customer/js/model/customer",
   "mage/storage",
 ], function (
@@ -14,6 +15,7 @@ define([
   _urlBuilder,
   alert,
   VaultEnabler,
+  CheckoutData,
   customer,
   storage
 ) {
@@ -30,6 +32,7 @@ define([
       self._super();
       this.vaultEnabler = new VaultEnabler();
       this.vaultEnabler.setPaymentCode(this.getVaultCode());
+      this.setEmail();
 
       this.redirectAfterPlaceOrder =
         this.isPaymentPreorder() || this.isManagedMode();
@@ -41,6 +44,28 @@ define([
       }
 
       return self;
+    },
+
+    getEmail: function () {
+      var emailCookieName = 'customer_em';
+      return window.checkoutConfig.customerData.email
+      || quote.guestEmail
+      || CheckoutData.getValidatedEmailValue()
+      || $.cookie(emailCookieName);
+    },
+
+    setEmail: function () {
+      var userEmail = this.getEmail();
+      var emailCookieName = 'customer_em';
+      $.cookie(emailCookieName, userEmail);
+
+      // If no email found, observe the core email field
+      if (!userEmail) {
+          $('#customer-email').off('change').on('change', function () {
+              userEmail = quote.guestEmail || CheckoutData.getValidatedEmailValue();
+              $.cookie(emailCookieName, userEmail);
+          });
+      }
     },
 
     getData: function () {
@@ -436,6 +461,7 @@ define([
         let quoteId = quote.getQuoteId();
         var token = token;
         this.pt_start_payment_ui(true);
+        
 
         this.payManagePage(quoteId, token);
 
@@ -518,6 +544,8 @@ define([
         method: this.getCode(),
         token: token,
       };
+      console.log(quote.billingAddress().email);
+      return;
 
       $.post(_urlBuilder.build(url), payload)
         .done(function (result) {

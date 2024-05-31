@@ -259,6 +259,7 @@ class Api
         $storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
         $localeResolver = $objectManager->get('\Magento\Framework\Locale\ResolverInterface');
         $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
+        $cookieManager = $objectManager->get('Magento\Framework\Stdlib\CookieManagerInterface');
         $versionMagento = $productMetadata->getVersion();
 
         if ($use_order_currency) {
@@ -425,6 +426,7 @@ class Api
 
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+        $cookieManager = $objectManager->get('Magento\Framework\Stdlib\CookieManagerInterface');
         $localeResolver = $objectManager->get('\Magento\Framework\Locale\ResolverInterface');
         $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
         $versionMagento = $productMetadata->getVersion();
@@ -537,6 +539,8 @@ class Api
                 $tran_type = ClickPayEnum::TRAN_TYPE_SALE;
                 break;
         }
+
+        $customeremail = $cookieManager->getCookie('customer_em');
 
         $email = ($billingAddress->getEmail() !== null ) ? $billingAddress->getEmail() : $customeremail;
 
