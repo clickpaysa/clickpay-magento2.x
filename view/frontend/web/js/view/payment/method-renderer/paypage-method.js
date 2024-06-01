@@ -544,8 +544,8 @@ define([
         method: this.getCode(),
         token: token,
       };
-      console.log(quote.billingAddress().email);
-      return;
+      // console.log(quote.billingAddress().email);
+      // return;
 
       $.post(_urlBuilder.build(url), payload)
         .done(function (result) {
