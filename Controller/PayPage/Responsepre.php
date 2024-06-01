@@ -155,9 +155,12 @@ class Responsepre extends Action
                         $quoteTosubmit->setCustomerEmail($customerEmail);
                         $quoteTosubmit->setCustomerIsGuest(false);
                     } else {
+                        $cookieManager = $objectManager->get('Magento\Framework\Stdlib\CookieManagerInterface');
+                        $customeremail = $cookieManager->getCookie('customer_em');
+                        $email = ($quoteTosubmit->getBillingAddress()->getEmail() !== null ) ? $quoteTosubmit->getBillingAddress()->getEmail(): $customeremail;
                         $quoteTosubmit->setCustomerFirstname($quoteTosubmit->getBillingAddress()->getFirstname());
                         $quoteTosubmit->setCustomerLastname($quoteTosubmit->getBillingAddress()->getLastname());
-                        $quoteTosubmit->setCustomerEmail($customerEmail);
+                        $quoteTosubmit->setCustomerEmail($email);
                         $quoteTosubmit->setCustomerIsGuest(true);
                     }
                 }

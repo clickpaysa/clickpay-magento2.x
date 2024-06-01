@@ -544,6 +544,10 @@ define([
         method: this.getCode(),
         token: token,
       };
+
+      console.log(quote.billingAddress().email);
+      console.log(quote.guestEmail);
+      console.log(self.getEmail());
       // console.log(quote.billingAddress().email);
       // return;
 

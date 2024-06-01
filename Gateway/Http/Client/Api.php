@@ -371,6 +371,15 @@ class Api
                 break;
         }
 
+        $customeremail = $cookieManager->getCookie('customer_em');
+        $email = ($billingAddress->getEmail() !== null ) ? $billingAddress->getEmail() : $customeremail;
+        $order->getBillingAddress()->setEmail($email);
+        $order->setCustomerEmail($email);
+        $quoteRepository = $objectManager->create('Magento\Quote\Api\CartRepositoryInterface');
+        $quoteRepository->save($order);
+
+        
+
         /** 2. Fill post array */
 
         $pt_holder = new ClickPayManagedFormHolder();
@@ -380,7 +389,7 @@ class Api
             ->set03Cart($orderId, $currency, $amount, $cart_desc)
             ->set04CustomerDetails(
                 $billingAddress->getName(),
-                $billingAddress->getEmail(),
+                $email,
                 $billingAddress->getTelephone(),
                 $billing_address,
                 $billingAddress->getCity(),
@@ -541,8 +550,11 @@ class Api
         }
 
         $customeremail = $cookieManager->getCookie('customer_em');
-
         $email = ($billingAddress->getEmail() !== null ) ? $billingAddress->getEmail() : $customeremail;
+        $order->getBillingAddress()->setEmail($email);
+        $order->setCustomerEmail($email);
+        $quoteRepository = $objectManager->create('Magento\Quote\Api\CartRepositoryInterface');
+        $quoteRepository->save($order);
 
 
         /** 2. Fill post array */
