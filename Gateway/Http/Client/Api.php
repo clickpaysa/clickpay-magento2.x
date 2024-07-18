@@ -262,6 +262,14 @@ class Api
         $cookieManager = $objectManager->get('Magento\Framework\Stdlib\CookieManagerInterface');
         $versionMagento = $productMetadata->getVersion();
 
+        $sequenceManager = $objectManager->get('\Magento\SalesSequence\Model\Manager');
+        $quoteRepository = $objectManager->get('\Magento\Quote\Api\CartRepositoryInterface');
+        $orderCollection = $objectManager->get('\Magento\Sales\Model\ResourceModel\Order\Collection');
+
+        $reservedOrderId = $this->getReservedOrderId($sequenceManager, $orderCollection, $order->getStoreId());
+        $order->setReservedOrderId($reservedOrderId);
+        $quoteRepository->save($order);
+
         if ($use_order_currency) {
             if ($preApprove) {
                 $currency = $order->getQuoteCurrencyCode();
@@ -372,13 +380,13 @@ class Api
         }
 
         $customeremail = $cookieManager->getCookie('customer_em');
-        $email = ($billingAddress->getEmail() !== null ) ? $billingAddress->getEmail() : $customeremail;
+        $email = ($billingAddress->getEmail() !== null) ? $billingAddress->getEmail() : $customeremail;
         $order->getBillingAddress()->setEmail($email);
         $order->setCustomerEmail($email);
         $quoteRepository = $objectManager->create('Magento\Quote\Api\CartRepositoryInterface');
         $quoteRepository->save($order);
 
-        
+
 
         /** 2. Fill post array */
 
@@ -386,7 +394,7 @@ class Api
         $pt_holder
             ->set30PaymentToken($token)
             ->set02Transaction($tran_type, ClickPayEnum::TRAN_CLASS_ECOM)
-            ->set03Cart($orderId, $currency, $amount, $cart_desc)
+            ->set03Cart($reservedOrderId, $currency, $amount, $cart_desc)
             ->set04CustomerDetails(
                 $billingAddress->getName(),
                 $email,
@@ -440,6 +448,14 @@ class Api
         $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
         $versionMagento = $productMetadata->getVersion();
 
+        $sequenceManager = $objectManager->get('\Magento\SalesSequence\Model\Manager');
+        $quoteRepository = $objectManager->get('\Magento\Quote\Api\CartRepositoryInterface');
+        $orderCollection = $objectManager->get('\Magento\Sales\Model\ResourceModel\Order\Collection');
+
+        $reservedOrderId = $this->getReservedOrderId($sequenceManager, $orderCollection, $order->getStoreId());
+        $order->setReservedOrderId($reservedOrderId);
+        $quoteRepository->save($order);
+
         if ($use_order_currency) {
             if ($preApprove) {
                 $currency = $order->getQuoteCurrencyCode();
@@ -550,7 +566,7 @@ class Api
         }
 
         $customeremail = $cookieManager->getCookie('customer_em');
-        $email = ($billingAddress->getEmail() !== null ) ? $billingAddress->getEmail() : $customeremail;
+        $email = ($billingAddress->getEmail() !== null) ? $billingAddress->getEmail() : $customeremail;
         $order->getBillingAddress()->setEmail($email);
         $order->setCustomerEmail($email);
         $quoteRepository = $objectManager->create('Magento\Quote\Api\CartRepositoryInterface');
@@ -563,7 +579,7 @@ class Api
         $pt_holder
             ->set01PaymentCode('applepay')
             ->set02Transaction($tran_type, ClickPayEnum::TRAN_CLASS_ECOM)
-            ->set03Cart($orderId, $currency, $amount, $cart_desc)
+            ->set03Cart($reservedOrderId, $currency, $amount, $cart_desc)
             ->set04CustomerDetails(
                 $billingAddress->getName(),
                 $email,
@@ -591,6 +607,21 @@ class Api
         //
 
         return $post_arr;
+    }
+
+    private function getReservedOrderId($sequenceManager, $orderCollection, $storeId)
+    {
+        do {
+            $reservedOrderId = $sequenceManager->getSequence('order', $storeId)->getNextValue();
+        } while ($this->isIncrementIdUsed($orderCollection, $reservedOrderId));
+
+        return $reservedOrderId;
+    }
+
+    private function isIncrementIdUsed($orderCollection, $incrementId)
+    {
+        $existingOrder = $orderCollection->addFieldToFilter('increment_id', $incrementId)->getFirstItem();
+        return $existingOrder && $existingOrder->getId();
     }
 
     /**

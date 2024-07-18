@@ -137,229 +137,156 @@ class Responsepre extends Action
         $cartManagementInterface = $objectManager->create('Magento\Quote\Api\CartManagementInterface');
         $order = $objectManager->create('Magento\Sales\Model\Order');
 
-        $quoteTosubmit = $quoteFactory->create()->load($pOrderId);
-        ClickpayHelper::log("Return pre Quote Active  [$pOrderId]", 1);
+        // Load quote by reserved order ID
+        $quoteCollection = $objectManager->create('Magento\Quote\Model\ResourceModel\Quote\Collection');
+        $quote = $quoteCollection->addFieldToFilter('reserved_order_id', $pOrderId)->getFirstItem();
+        $resultRedirect = $this->resultRedirectFactory->create();
 
-        if ($quoteTosubmit->getIsActive()) {
-            try {
-                if (is_null($quoteTosubmit->getCustomerId())) {
-                    $customerEmail = $quoteTosubmit->getBillingAddress()->getEmail();
-                    $websiteId = $quoteTosubmit->getStore()->getWebsiteId();
-                    $customer = $customerFactory->create();
-                    $customer->setWebsiteId($websiteId);
-                    $customer->loadByEmail($customerEmail);
-                    if ($customer->getEntityId()) {
-                        $quoteTosubmit->setCustomerId($customer->getEntityId());
-                        $quoteTosubmit->setCustomerFirstname($customer->getFirstname());
-                        $quoteTosubmit->setCustomerLastname($customer->getLastname());
-                        $quoteTosubmit->setCustomerEmail($customerEmail);
-                        $quoteTosubmit->setCustomerIsGuest(false);
-                    } else {
-                        $cookieManager = $objectManager->get('Magento\Framework\Stdlib\CookieManagerInterface');
-                        $customeremail = $cookieManager->getCookie('customer_em');
-                        $email = ($quoteTosubmit->getBillingAddress()->getEmail() !== null ) ? $quoteTosubmit->getBillingAddress()->getEmail(): $customeremail;
-                        $quoteTosubmit->setCustomerFirstname($quoteTosubmit->getBillingAddress()->getFirstname());
-                        $quoteTosubmit->setCustomerLastname($quoteTosubmit->getBillingAddress()->getLastname());
-                        $quoteTosubmit->setCustomerEmail($email);
-                        $quoteTosubmit->setCustomerIsGuest(true);
-                    }
-                }
+        if ($quote && $quote->getId()) {
+            $quoteId = $quote->getId();
+            ClickpayHelper::log("Found quote ID: [$quoteId] for reserved order ID: [$pOrderId]", 1);
 
-
-                // Save Quote
-                $quoteTosubmit->setInventoryProcessed(false);
-                $quoteTosubmit->save();
-                $quoteTosubmit->collectTotals()->save();
-                ClickpayHelper::log("Return pre Quote Saved  [$pOrderId]", 1);
-
-                $finalquote = $quoteRepository->get($quoteTosubmit->getId());
-                $orderId = $cartManagementInterface->placeOrder($finalquote->getId());
-                $order = $order->load($orderId);
-
-                if ($order->getId()) {
-                    ClickpayHelper::log("Return pre Order Created  [$pOrderId]", 1);
-                    $payment = $order->getPayment();
-                    $paymentMethod = $payment->getMethodInstance();
-                    $ptApi = $this->ClickPay->pt($paymentMethod);
-
-                    $verify_response = $ptApi->verify_payment($transactionId);
-                    if (!$verify_response) {
-                        ClickpayHelper::log("Return pre Order Verify No Response", 1);
-                        $this->messageManager->addErrorMessage('The payment failed - Verify No Response');
-                        return $this->_redirect('checkout/cart');
-                    }
-
-                    $cart_refill = (bool) $paymentMethod->getConfigData('order_failed_reorder');
-
-                    ClickpayHelper::log("Return pre Order invoice start", 1);
-                    $resultRedirect = $this->resultRedirectFactory->create();
-
-                    $paymentMethod = $payment->getMethodInstance();
-
-                    $paymentSuccess =
-                        $paymentMethod->getConfigData('order_success_status') ?? Order::STATE_PROCESSING;
-                    $paymentFailed =
-                        $paymentMethod->getConfigData('order_failed_status') ?? Order::STATE_CANCELED;
-                    $sendInvoice = (bool) $paymentMethod->getConfigData('automatic_invoice');
-                    $sendInvoiceEmail = (bool) $paymentMethod->getConfigData('email_customer');
-                    $emailConfig = $paymentMethod->getConfigData('email_config');
-
-                    $use_order_currency = CurrencySelect::UseOrderCurrency($payment);
-
-                    $success = $verify_response->success;
-                    $is_on_hold = $verify_response->is_on_hold;
-                    $is_pending = $verify_response->is_pending;
-                    $res_msg = $verify_response->message;
-                    $orderId = @$verify_response->reference_no;
-                    $transaction_ref = @$verify_response->transaction_id;
-                    $pt_prev_tran_ref = @$verify_response->previous_tran_ref;
-                    $transaction_type = @$verify_response->tran_type;
-                    $response_code = @$verify_response->response_code;
-                    ClickpayHelper::log("Return pre Order invoice start 1", 1);
-
-                    $_fail = !($success || $is_on_hold || $is_pending);
-
-                    if ($_fail) {
-                        ClickPayHelper::log("ClickPay Response: Payment verify failed, Order {$orderId}, Message [$res_msg]", 2);
-
-                        $payment->cancel();
-                        $order->addStatusHistoryComment(__('Payment failed: [%1].', $res_msg));
-
-                        if ($paymentFailed != Order::STATE_CANCELED) {
-                            $this->setNewStatus($order, $paymentFailed);
+            // Now you can use $quoteId or $quote as needed
+            $quoteTosubmit = $quoteFactory->create()->load($quoteId);
+            if ($quoteTosubmit->getIsActive()) {
+                try {
+                    if (is_null($quoteTosubmit->getCustomerId())) {
+                        $customerEmail = $quoteTosubmit->getBillingAddress()->getEmail();
+                        $websiteId = $quoteTosubmit->getStore()->getWebsiteId();
+                        $customer = $customerFactory->create();
+                        $customer->setWebsiteId($websiteId);
+                        $customer->loadByEmail($customerEmail);
+                        if ($customer->getEntityId()) {
+                            $quoteTosubmit->setCustomerId($customer->getEntityId());
+                            $quoteTosubmit->setCustomerFirstname($customer->getFirstname());
+                            $quoteTosubmit->setCustomerLastname($customer->getLastname());
+                            $quoteTosubmit->setCustomerEmail($customerEmail);
+                            $quoteTosubmit->setCustomerIsGuest(false);
                         } else {
-                            $order->cancel();
+                            $cookieManager = $objectManager->get('Magento\Framework\Stdlib\CookieManagerInterface');
+                            $customeremail = $cookieManager->getCookie('customer_em');
+                            $email = ($quoteTosubmit->getBillingAddress()->getEmail() !== null) ? $quoteTosubmit->getBillingAddress()->getEmail() : $customeremail;
+                            $quoteTosubmit->setCustomerFirstname($quoteTosubmit->getBillingAddress()->getFirstname());
+                            $quoteTosubmit->setCustomerLastname($quoteTosubmit->getBillingAddress()->getLastname());
+                            $quoteTosubmit->setCustomerEmail($email);
+                            $quoteTosubmit->setCustomerIsGuest(true);
                         }
-                        $order->save();
+                    }
 
-                        $resultRedirect->setPath('checkout/cart');
-                        return $resultRedirect;
-                    } else {
 
-                        ClickpayHelper::log("Return pre Order invoice start 2", 1);
+                    // Save Quote
+                    $quoteTosubmit->setInventoryProcessed(false);
+                    $quoteTosubmit->save();
+                    $quoteTosubmit->collectTotals()->save();
+                    ClickpayHelper::log("Return pre Quote Saved  [$pOrderId]", 1);
 
-                        // Success or OnHold  or Pending
-                        $tranAmount = $verify_response->cart_amount;
-                        $tranCurrency = $verify_response->cart_currency;
+                    $finalquote = $quoteRepository->get($quoteTosubmit->getId());
+                    $orderId = $cartManagementInterface->placeOrder($finalquote->getId());
+                    $order = $order->load($orderId);
 
-                        $_tran_details = [
-                            'tran_amount'   => $tranAmount,
-                            'tran_currency' => $tranCurrency,
-                            'tran_type'     => $transaction_type,
-                            'response_code' => $response_code
-                        ];
-                        if ($pt_prev_tran_ref) {
-                            $_tran_details['previous_tran'] = $pt_prev_tran_ref;
+                    if ($order->getId()) {
+                        ClickpayHelper::log("Return pre Order Created  [$pOrderId]", 1);
+                        $payment = $order->getPayment();
+                        $paymentMethod = $payment->getMethodInstance();
+                        $ptApi = $this->ClickPay->pt($paymentMethod);
+
+                        $verify_response = $ptApi->verify_payment($transactionId);
+                        if (!$verify_response) {
+                            ClickpayHelper::log("Return pre Order Verify No Response", 1);
+                            $this->messageManager->addErrorMessage('The payment failed - Verify No Response');
+                            return $this->_redirect('checkout/cart');
                         }
 
-                        $payment
-                            ->setTransactionId($transaction_ref)
-                            ->setTransactionAdditionalinfo($this->_row_details, $_tran_details);
+                        $cart_refill = (bool) $paymentMethod->getConfigData('order_failed_reorder');
+
+                        ClickpayHelper::log("Return pre Order invoice start", 1);
 
 
-                        $paymentAmount = $this->getAmount($payment, $tranCurrency, $tranAmount, $use_order_currency);
+                        $paymentMethod = $payment->getMethodInstance();
 
-                        ClickpayHelper::log("Return pre Order invoice start 3", 1);
+                        $paymentSuccess =
+                            $paymentMethod->getConfigData('order_success_status') ?? Order::STATE_PROCESSING;
+                        $paymentFailed =
+                            $paymentMethod->getConfigData('order_failed_status') ?? Order::STATE_CANCELED;
+                        $sendInvoice = (bool) $paymentMethod->getConfigData('automatic_invoice');
+                        $sendInvoiceEmail = (bool) $paymentMethod->getConfigData('email_customer');
+                        $emailConfig = $paymentMethod->getConfigData('email_config');
 
-                        if ($is_pending) {
-                            $payment
-                                ->setIsTransactionPending(true)
-                                ->setIsTransactionClosed(false);
+                        $use_order_currency = CurrencySelect::UseOrderCurrency($payment);
 
-                            //
+                        $success = $verify_response->success;
+                        $is_on_hold = $verify_response->is_on_hold;
+                        $is_pending = $verify_response->is_pending;
+                        $res_msg = $verify_response->message;
+                        $orderId = @$verify_response->reference_no;
+                        $transaction_ref = @$verify_response->transaction_id;
+                        $pt_prev_tran_ref = @$verify_response->previous_tran_ref;
+                        $transaction_type = @$verify_response->tran_type;
+                        $response_code = @$verify_response->response_code;
+                        ClickpayHelper::log("Return pre Order invoice start 1", 1);
 
-                            ClickpayHelper::log("Order {$orderId}, On-Hold (Pending), transaction {$transaction_ref}", 1);
+                        $_fail = !($success || $is_on_hold || $is_pending);
 
-                            $order->hold();
+                        if ($_fail) {
+                            ClickPayHelper::log("ClickPay Response: Payment verify failed, Order {$orderId}, Message [$res_msg]", 2);
 
-                            // Add Comment to Store Admin
-                            $order->addStatusHistoryComment("Transaction {$transaction_ref} is Pending, (Reference number: {$response_code}).");
+                            $payment->cancel();
+                            $order->addStatusHistoryComment(__('Payment failed: [%1].', $res_msg));
 
-                            // Add comment to the Customer
-                            $order->addCommentToStatusHistory("Payment Reference number: {$response_code}", false, true);
-
+                            if ($paymentFailed != Order::STATE_CANCELED) {
+                                $this->setNewStatus($order, $paymentFailed);
+                            } else {
+                                $order->cancel();
+                            }
                             $order->save();
 
-                            $redirectUrl = $this->_url->getUrl('checkout/onepage/success', [
-                                'entity_id' =>  $order->getEntityId(),
-                                'increment_id' => $order->getIncrementId(),
-                                'quote_id' => $order->getQuoteId()
-                            ]);
-                            $resultRedirect->setUrl($redirectUrl);
+                            $resultRedirect->setPath('checkout/cart');
                             return $resultRedirect;
                         } else {
 
-                            ClickpayHelper::log("Return pre Order invoice start 4", 1);
+                            ClickpayHelper::log("Return pre Order invoice start 2", 1);
 
-                            $payment->setAmountAuthorized($payment->getAmountOrdered());
+                            // Success or OnHold  or Pending
+                            $tranAmount = $verify_response->cart_amount;
+                            $tranCurrency = $verify_response->cart_currency;
+
+                            $_tran_details = [
+                                'tran_amount'   => $tranAmount,
+                                'tran_currency' => $tranCurrency,
+                                'tran_type'     => $transaction_type,
+                                'response_code' => $response_code
+                            ];
+                            if ($pt_prev_tran_ref) {
+                                $_tran_details['previous_tran'] = $pt_prev_tran_ref;
+                            }
+
+                            $payment
+                                ->setTransactionId($transaction_ref)
+                                ->setTransactionAdditionalinfo($this->_row_details, $_tran_details);
 
 
-                            if (ClickPayEnum::TranIsSale($transaction_type)) {
+                            $paymentAmount = $this->getAmount($payment, $tranCurrency, $tranAmount, $use_order_currency);
 
-                                if ($pt_prev_tran_ref) {
-                                    $payment->setParentTransactionId($pt_prev_tran_ref);
-                                }
+                            ClickpayHelper::log("Return pre Order invoice start 3", 1);
 
-                                // $payment->capture();
-                                $payment->registerCaptureNotification($paymentAmount, true);
-                            } else {
+                            if ($is_pending) {
                                 $payment
-                                    ->setIsTransactionClosed(false)
-                                    ->registerAuthorizationNotification($paymentAmount);
-                            }
+                                    ->setIsTransactionPending(true)
+                                    ->setIsTransactionClosed(false);
 
-                            ClickpayHelper::log("Return pre Order invoice start 5", 1);
+                                //
 
-                            $payment->accept();
+                                ClickpayHelper::log("Order {$orderId}, On-Hold (Pending), transaction {$transaction_ref}", 1);
 
-                            $canSendEmail = EmailConfig::canSendEMail(EmailConfig::EMAIL_PLACE_AFTER_PAYMENT, $emailConfig);
-                            if ($canSendEmail) {
-                                $order->setCanSendNewEmailFlag(true);
-                                $this->_orderSender->send($order);
-                            }
-
-                            ClickpayHelper::log("Return pre Order invoice start 6", 1);
-
-                            if ($sendInvoice) {
-                                $this->invoiceSend($order, $payment);
-                            }
-                            ClickpayHelper::log("Return pre Order invoice start 7", 1);
-
-                            if ($success) {
-                                ClickpayHelper::log("Return pre Order invoice start 8", 1);
-
-                                $this->pt_manage_tokenize($this->_paymentTokenFactory, $this->encryptor, $payment, $verify_response);
-                                $order->save();
-                                $this->messageManager->addSuccessMessage('The payment has been completed successfully - ' . $res_msg);
-
-                                ClickpayHelper::log("Return pre Order invoice start 11", 1);
-                                // $resultRedirect->setPath($redirect_page);
-                                // return $resultRedirect;
-                                // Redirect to the success page
-                                // Redirect to order success page with parameters
-
-                                if ($sendInvoice && $sendInvoiceEmail) {
-                                    $invoice = $order->getInvoiceCollection()->getFirstItem();
-                                    $this->invoiceSender->send($invoice);
-                                }
-                                
-                                $redirectUrl = $this->_url->getUrl('checkout/onepage/success', [
-                                    'entity_id' =>  $order->getEntityId(),
-                                    'increment_id' => $order->getIncrementId(),
-                                    'quote_id' => $order->getQuoteId()
-                                ]);
-                                $resultRedirect->setUrl($redirectUrl);
-                                return $resultRedirect;
-                            } elseif ($is_on_hold) {
-                                ClickpayHelper::log("Return pre Order invoice start 9", 1);
                                 $order->hold();
 
-                                ClickPayHelper::log("Order {$orderId}, On-Hold, transaction {$transaction_ref}", 1);
-                                $order->addCommentToStatusHistory("Transaction {$transaction_ref} is On-Hold, Go to ClickPay dashboard to Approve/Decline it");
+                                // Add Comment to Store Admin
+                                $order->addStatusHistoryComment("Transaction {$transaction_ref} is Pending, (Reference number: {$response_code}).");
+
+                                // Add comment to the Customer
+                                $order->addCommentToStatusHistory("Payment Reference number: {$response_code}", false, true);
 
                                 $order->save();
-                                $this->messageManager->addWarningMessage('The payment is pending - ' . $res_msg);
-                                ClickpayHelper::log("Return pre Order invoice start 11", 1);
 
                                 $redirectUrl = $this->_url->getUrl('checkout/onepage/success', [
                                     'entity_id' =>  $order->getEntityId(),
@@ -369,44 +296,136 @@ class Responsepre extends Action
                                 $resultRedirect->setUrl($redirectUrl);
                                 return $resultRedirect;
                             } else {
-                                ClickpayHelper::log("Return pre Order invoice start 10", 1);
-                                $this->messageManager->addErrorMessage('The payment failed - ' . $res_msg);
-                                $redirect_page = 'checkout/onepage/failure';
 
-                                if ($cart_refill) {
-                                    try {
-                                        $quoteId = $order->getQuoteId();
-                                        $quote = $this->quoteRepository->get($quoteId);
-                                        $quote->setIsActive(true)->removePayment()->save();
-                                        $this->checkoutSession->replaceQuote($quote);
-                                        $redirect_page = 'checkout/cart';
-                                    } catch (\Throwable $th) {
-                                        ClickPayHelper::log("ClickPay: load Quote by ID failed!, Order [{$orderId}], QuoteId = [{$quoteId}]", 3);
+                                ClickpayHelper::log("Return pre Order invoice start 4", 1);
+
+                                $payment->setAmountAuthorized($payment->getAmountOrdered());
+
+
+                                if (ClickPayEnum::TranIsSale($transaction_type)) {
+
+                                    if ($pt_prev_tran_ref) {
+                                        $payment->setParentTransactionId($pt_prev_tran_ref);
                                     }
+
+                                    // $payment->capture();
+                                    $payment->registerCaptureNotification($paymentAmount, true);
+                                } else {
+                                    $payment
+                                        ->setIsTransactionClosed(false)
+                                        ->registerAuthorizationNotification($paymentAmount);
                                 }
 
-                                ClickpayHelper::log("Return pre Order invoice start 11 -  [$redirect_page]", 1);
+                                ClickpayHelper::log("Return pre Order invoice start 5", 1);
 
-                                $resultRedirect->setPath($redirect_page);
-                                return $resultRedirect;
+                                $payment->accept();
+
+                                $canSendEmail = EmailConfig::canSendEMail(EmailConfig::EMAIL_PLACE_AFTER_PAYMENT, $emailConfig);
+                                if ($canSendEmail) {
+                                    $order->setCanSendNewEmailFlag(true);
+                                    $this->_orderSender->send($order);
+                                }
+
+                                ClickpayHelper::log("Return pre Order invoice start 6", 1);
+
+                                if ($sendInvoice) {
+                                    $this->invoiceSend($order, $payment);
+                                }
+                                ClickpayHelper::log("Return pre Order invoice start 7", 1);
+
+                                if ($success) {
+                                    ClickpayHelper::log("Return pre Order invoice start 8", 1);
+
+                                    $this->pt_manage_tokenize($this->_paymentTokenFactory, $this->encryptor, $payment, $verify_response);
+                                    $order->save();
+                                    $this->messageManager->addSuccessMessage('The payment has been completed successfully - ' . $res_msg);
+
+                                    ClickpayHelper::log("Return pre Order invoice start 11", 1);
+                                    // $resultRedirect->setPath($redirect_page);
+                                    // return $resultRedirect;
+                                    // Redirect to the success page
+                                    // Redirect to order success page with parameters
+
+                                    if ($sendInvoice && $sendInvoiceEmail) {
+                                        $invoice = $order->getInvoiceCollection()->getFirstItem();
+                                        $this->invoiceSender->send($invoice);
+                                    }
+
+                                    $redirectUrl = $this->_url->getUrl('checkout/onepage/success', [
+                                        'entity_id' =>  $order->getEntityId(),
+                                        'increment_id' => $order->getIncrementId(),
+                                        'quote_id' => $order->getQuoteId()
+                                    ]);
+                                    $resultRedirect->setUrl($redirectUrl);
+                                    return $resultRedirect;
+                                } elseif ($is_on_hold) {
+                                    ClickpayHelper::log("Return pre Order invoice start 9", 1);
+                                    $order->hold();
+
+                                    ClickPayHelper::log("Order {$orderId}, On-Hold, transaction {$transaction_ref}", 1);
+                                    $order->addCommentToStatusHistory("Transaction {$transaction_ref} is On-Hold, Go to ClickPay dashboard to Approve/Decline it");
+
+                                    $order->save();
+                                    $this->messageManager->addWarningMessage('The payment is pending - ' . $res_msg);
+                                    ClickpayHelper::log("Return pre Order invoice start 11", 1);
+
+                                    $redirectUrl = $this->_url->getUrl('checkout/onepage/success', [
+                                        'entity_id' =>  $order->getEntityId(),
+                                        'increment_id' => $order->getIncrementId(),
+                                        'quote_id' => $order->getQuoteId()
+                                    ]);
+                                    $resultRedirect->setUrl($redirectUrl);
+                                    return $resultRedirect;
+                                } else {
+                                    ClickpayHelper::log("Return pre Order invoice start 10", 1);
+                                    $this->messageManager->addErrorMessage('The payment failed - ' . $res_msg);
+                                    $redirect_page = 'checkout/onepage/failure';
+
+                                    if ($cart_refill) {
+                                        try {
+                                            $quoteId = $order->getQuoteId();
+                                            $quote = $this->quoteRepository->get($quoteId);
+                                            $quote->setIsActive(true)->removePayment()->save();
+                                            $this->checkoutSession->replaceQuote($quote);
+                                            $redirect_page = 'checkout/cart';
+                                        } catch (\Throwable $th) {
+                                            ClickPayHelper::log("ClickPay: load Quote by ID failed!, Order [{$orderId}], QuoteId = [{$quoteId}]", 3);
+                                        }
+                                    }
+
+                                    ClickpayHelper::log("Return pre Order invoice start 11 -  [$redirect_page]", 1);
+
+                                    $resultRedirect->setPath($redirect_page);
+                                    return $resultRedirect;
+                                }
                             }
                         }
+                    } else {
+                        ClickpayHelper::log("Return pre Order Failed  [$pOrderId]", 1);
+                        $redirect_page = 'checkout/cart';
+                        ClickpayHelper::log("Return pre Order invoice start 11 -  [$redirect_page]", 1);
+                        $resultRedirect->setPath($redirect_page);
+                        return $resultRedirect;
                     }
-                } else {
-                    ClickpayHelper::log("Return pre Order Failed  [$pOrderId]", 1);
+                } catch (LocalizedException $e) {
+                    echo "LocalizedException: " . $e->getMessage() . "\n";
+                    $mes = $e->getMessage();
                     $redirect_page = 'checkout/cart';
-                    ClickpayHelper::log("Return pre Order invoice start 11 -  [$redirect_page]", 1);
+                    ClickpayHelper::log("Return pre Order invoice start 11 -  [$mes]", 1);
                     $resultRedirect->setPath($redirect_page);
                     return $resultRedirect;
                 }
-            } catch (LocalizedException $e) {
-                echo "LocalizedException: " . $e->getMessage() . "\n";
-                $mes = $e->getMessage();
-                $redirect_page = 'checkout/cart';
-                ClickpayHelper::log("Return pre Order invoice start 11 -  [$mes]", 1);
+            } else {
+                ClickpayHelper::log("No active quote found for reserved order ID: [$pOrderId]", 1);
+                // Handle the case when no quote is found
                 $resultRedirect->setPath($redirect_page);
                 return $resultRedirect;
             }
+        } else {
+            ClickpayHelper::log("No quote found for reserved order ID: [$pOrderId]", 1);
+            // Handle the case when no quote is found
+            $resultRedirect->setPath($redirect_page);
+            return $resultRedirect;
         }
     }
 }
